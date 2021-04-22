@@ -7,7 +7,11 @@ il processo padre invoca srand(1234);
 il processo padre crea un array di int, num_cicli, di dimensione N
 ogni elemento dell'array viene inizializzato con (rand() % 20)
 
-il processo padre crea un pipe; passa la pipe ai processi figli.
+il processo padre crea un pipe con questa system call: 
+  pipe2(pipe_fd, O_NONBLOCK); 
+  // O_NONBLOCK implica che quando read() viene invocata sull'estremità di lettura della pipe
+  // e questa è vuota, allora read() non blocca ma restituisce l'errore EAGAIN
+passa la pipe ai processi figli.
 il processo padre mantiene aperta la sola estremità di lettura della pipe
 (la pipe verrà usata come tecnica di sincronizzazione tra processi figli e processo padre:
 https://replit.com/@MarcoTessarotto/pipes-process-synchronization )
@@ -28,8 +32,19 @@ il processo figlio i-mo:
  il processo figlio termina
  
  
-il processo padre, dopo avere creato gli N processi figli:
- legge dalla pipe ed aspetta EOF
+il processo padre, dopo avere creato gli N processi figli, esegue un ciclo infinito
+ legge dalla pipe con read(); se questa restituisce EAGAIN, esce dal ciclo infinito
+ cicla su ciascuno degli N files:
+    acquisice il lock sul file i-mo con flock
+    legge il valore del contatore i-mo
+    rilascia il lock dul file
+    scrive su stdout un messaggio del tipo "contatore i = valore" 
+ dopo avere scritto il valore di tutti i contatori, dorme per un secondo
+  
+una volta uscito dal ciclo infinito,il processo padre
+aspetta la conclusione di tutti i processi figli.
+
+il processo padre termina scrivendo un messaggio di avviso.
  
  
 
