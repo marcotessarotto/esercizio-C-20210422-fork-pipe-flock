@@ -11,6 +11,7 @@ il processo padre crea un pipe con questa system call:
   pipe2(pipe_fd, O_NONBLOCK); 
   // O_NONBLOCK implica che quando read() viene invocata sull'estremità di lettura della pipe
   // e questa è vuota, allora read() non blocca ma restituisce l'errore EAGAIN
+  // vedere: https://replit.com/@MarcoTessarotto/pipe-nonblocking
 passa la pipe ai processi figli.
 il processo padre mantiene aperta la sola estremità di lettura della pipe
 (la pipe verrà usata come tecnica di sincronizzazione tra processi figli e processo padre:
