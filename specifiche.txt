@@ -1,1 +1,35 @@
-...
+#define N 10
+
+il processo padre crea N files (contatore0 , contatore1 ...) e in ciascun file scrive il valore 0 in formato binario.
+il processo padre tiene aperti gli N files
+
+il processo padre invoca srand(1234);
+il processo padre crea un array di int, num_cicli, di dimensione N
+ogni elemento dell'array viene inizializzato con (rand() % 20)
+
+il processo padre crea un pipe; passa la pipe ai processi figli.
+il processo padre mantiene aperta la sola estremità di lettura della pipe
+(la pipe verrà usata come tecnica di sincronizzazione tra processi figli e processo padre:
+https://replit.com/@MarcoTessarotto/pipes-process-synchronization )
+
+
+il processo padre crea N processi figli
+
+il processo figlio i-mo:
+ utilizza il file contatore i-mo (creato dal processo padre)
+ tiene aperto soltanto l'estremità di scrittura della pipe
+ il processo figlio i-mo esegue il seguente ciclo per num_cicli[i] volte:
+    acquisisce il lock sul file contatore con flock()
+    incrementa il valore nel file
+    rilascia il lock sul file contatore
+    sleep(1)
+ dopo il ciclo descritto sopra, il processo figlio chiude l'estremità di scrittura della pipe;
+ il processo figlio dorme per un numero di secondi dato da num_cicli[i] / 4
+ il processo figlio termina
+ 
+ 
+il processo padre, dopo avere creato gli N processi figli:
+ legge dalla pipe ed aspetta EOF
+ 
+ 
+
